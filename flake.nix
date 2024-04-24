@@ -20,11 +20,11 @@
     formatter = forEachSupportedSystem ({pkgs}: pkgs.alejandra);
     devShells = forEachSupportedSystem ({pkgs}: let
       ucimlrepo = ps: ps.callPackage ./nix/ucimlrepo.nix {};
-      matplotlib-catppuccin = ps: ps.callPackage ./nix/matplotlib-catppuccin.nix {};
+      catppuccin-matplotlib = ps: ps.callPackage ./nix/catppuccin-matplotlib.nix {};
       pythonLayered = pkgs.python3.withPackages (ps:
         with ps; [
           (ucimlrepo ps)
-          (matplotlib-catppuccin ps)
+          (catppuccin-matplotlib ps)
         ]);
     in {
       default = pkgs.mkShell {
