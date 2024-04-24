@@ -1,5 +1,6 @@
 import argparse
 import importlib
+from common import X, y
 
 graphs = ["tld_hist"]
 parser = argparse.ArgumentParser()
@@ -11,9 +12,6 @@ parser.add_argument("GRAPHS",
 
 args = parser.parse_args()
 print(args.GRAPHS)
-
-X = None
-y = None
 
 if args.GRAPHS[0] == "all":
     modules = graphs
