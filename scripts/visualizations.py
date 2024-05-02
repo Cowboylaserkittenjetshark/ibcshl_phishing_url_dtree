@@ -2,6 +2,7 @@ import argparse
 import importlib
 from common import X, y
 
+
 graphs = ["tld_hist"]
 parser = argparse.ArgumentParser()
 parser.add_argument("GRAPHS",

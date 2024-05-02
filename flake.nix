@@ -19,11 +19,9 @@
   in {
     formatter = forEachSupportedSystem ({pkgs}: pkgs.alejandra);
     devShells = forEachSupportedSystem ({pkgs}: let
-      ucimlrepo = ps: ps.callPackage ./nix/ucimlrepo.nix {};
       catppuccin-matplotlib = ps: ps.callPackage ./nix/catppuccin-matplotlib.nix {};
       pythonLayered = pkgs.python3.withPackages (ps:
         with ps; [
-          (ucimlrepo ps)
           (catppuccin-matplotlib ps)
         ]);
     in {
@@ -38,6 +36,12 @@
             scikit-learn
             matplotlib
             seaborn
+            # Parquet support for pandas
+            pyarrow
+            fastparquet
+            # For extracting tlds
+            tldextract
+            xgboost
           ]);
       };
     });
