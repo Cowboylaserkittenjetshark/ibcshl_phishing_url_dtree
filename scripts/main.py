@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, HistGradientBoostingClassifier
-from sklearn.model_selection import cross_val_score, RandomizedSearchCV, train_test_split
+from sklearn.model_selection import cross_val_score, RandomizedSearchCV, GridSearchCV, train_test_split
 # Start KNN
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
@@ -11,98 +11,9 @@ from sklearn.preprocessing import StandardScaler
 from scipy.stats import randint # For randomized search
 from xgboost import XGBClassifier
 import tldextract
+from joblib import parallel_backend
 from common import X, y
 
-features = [
-    "url",
-    "length_url",
-    "length_hostname",
-    "ip",
-    "nb_dots",
-    "nb_hyphens",
-    "nb_at",
-    "nb_qm",
-    "nb_and",
-    "nb_or",
-    "nb_eq",
-    "nb_underscore",
-    "nb_tilde",
-    "nb_percent",
-    "nb_slash",
-    "nb_star",
-    "nb_colon",
-    "nb_comma",
-    "nb_semicolumn",
-    "nb_dollar",
-    "nb_space",
-    "nb_www",
-    "nb_com",
-    "nb_dslash",
-    "http_in_path",
-    "https_token",
-    "ratio_digits_url",
-    "ratio_digits_host",
-    "punycode",
-    "port",
-    "tld_in_path",
-    "tld_in_subdomain",
-    "abnormal_subdomain", # Possibly arbitrary
-    "nb_subdomains",
-    "prefix_suffix",
-    "random_domain",
-    "shortening_service",
-    "path_extension",
-    "nb_redirection",
-    "nb_external_redirection",
-    "length_words_raw",
-    "char_repeat",
-    "shortest_words_raw",
-    "shortest_word_host",
-    "shortest_word_path",
-    "longest_words_raw",
-    "longest_word_host",
-    "longest_word_path",
-    "avg_words_raw",
-    "avg_word_host",
-    "avg_word_path",
-    "phish_hints",
-    "domain_in_brand",
-    "brand_in_subdomain",
-    "brand_in_path",
-    # "suspecious_tld", # Seems arbitrary
-    "statistical_report",
-    "nb_hyperlinks",
-    "ratio_intHyperlinks",
-    "ratio_extHyperlinks",
-    "ratio_nullHyperlinks",
-    "nb_extCSS",
-    "ratio_intRedirection",
-    "ratio_extRedirection",
-    "ratio_intErrors",
-    "ratio_extErrors",
-    "login_form",
-    "external_favicon",
-    "links_in_tags",
-    "submit_email",
-    "ratio_intMedia",
-    "ratio_extMedia",
-    "sfh",
-    "iframe",
-    "popup_window",
-    "safe_anchor",
-    "onmouseover",
-    "right_clic",
-    "empty_title",
-    "domain_in_title",
-    "domain_with_copyright",
-    "whois_registered_domain",
-    "domain_registration_length",
-    "domain_age",
-    "web_traffic",
-    "dns_record",
-    "google_index",
-    "page_rank",
-]
 X['tld'] = X.url.map(lambda url: tldextract.extract(url).suffix).rename('tld')
 X.drop(['url', 'suspecious_tld'], axis = 1, inplace = True)
 X = pd.get_dummies(X, columns = ['tld'], drop_first = True)
@@ -135,6 +46,38 @@ clf = clf.fit(X_train, y_train)
 print("model score: %.3f" % clf.score(X_test, y_test))
 print(cross_val_score(clf, X_test, y_test, cv=7))
 
+hgb_params = {
+    'max_iter':range(20,81,10),
+    # 'min_samples_leaf':range(0,21,2)
+}
+hgb_gs = GridSearchCV(
+    estimator=HistGradientBoostingClassifier(
+        learning_rate=0.1,
+        # min_samples_split=500,
+        # min_samples_leaf=50,
+        # max_depth=8,
+        # max_features='sqrt',
+        # subsample=0.8,
+        random_state=10
+    ),
+    param_grid=hgb_params,
+    scoring='roc_auc',
+    n_jobs=4,
+    cv=5,
+    verbose=5
+)
+
+with parallel_backend('threading', n_jobs=6):
+    hgb_gs.fit(X_train, y_train)
+
+    print(hgb_gs.best_estimator_)
+    best_tuned_clf = hgb_gs.best_estimator_
+    print("Tuned: ", metrics.accuracy_score(y_test, best_tuned_clf.predict(X_test)))
+
+    # print(metrics.classification_report(y_test, cut_clf.predict(X_test)))
+    print(metrics.classification_report(y_test, best_tuned_clf.predict(X_test)))
+
+exit(1)
 params = {
     'criterion': ['gini', 'entropy'],
     'max_depth': randint(low=4, high=40),

@@ -42,6 +42,7 @@
             # For extracting tlds
             tldextract
             xgboost
+            joblib
           ]);
       };
     });
