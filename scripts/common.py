@@ -12,5 +12,5 @@ mpl.style.use("mocha")
 train = pd.read_parquet(data.TRAIN_FILE)
 test = pd.read_parquet(data.TEST_FILE)
 data = pd.concat([train, test])
-X = data[data.columns.difference(['status'])]
 y = data['status']
+X = data.drop('status', axis = 1)
