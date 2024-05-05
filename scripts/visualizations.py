@@ -3,7 +3,7 @@ import importlib
 from common import X, y
 
 
-graphs = ["tld_hist"]
+graphs = ["tld_bar", "https_bar"]
 parser = argparse.ArgumentParser()
 parser.add_argument("GRAPHS",
                     help = "One or more graphs to generate",

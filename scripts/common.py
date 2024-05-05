@@ -3,7 +3,7 @@ import pandas as pd
 import mplcatppuccin
 import seaborn as sns
 from paths import data
-
+from derive_features import derive_features
 # Plot style
 TRANSPARENT = False
 sns.set_style("whitegrid")
@@ -14,3 +14,5 @@ test = pd.read_parquet(data.TEST_FILE)
 data = pd.concat([train, test])
 y = data['status']
 X = data.drop('status', axis = 1)
+derive_features(X)
+print(X)

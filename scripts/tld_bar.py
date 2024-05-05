@@ -1,11 +1,9 @@
 import pandas as pd
-import re
-import tldextract
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 def make_graph(X, y):
-    tlds = X.url.map(lambda url: tldextract.extract(url).suffix).rename('tld')
+    tlds = X.tld
     y = pd.get_dummies(y)
 
     df = pd.concat([tlds, y], axis = 1)
@@ -16,9 +14,9 @@ def make_graph(X, y):
     df = df[df.total > 50]
     df["pct_phish"] = (df.phishing / df.total) * 100
     # print(df.loc['ru'])
-    df.sort_values(by = ['pct_phish', 'total'], ascending = False, inplace = True)
+    df.sort_values(by = ['pct_phish', 'total'], ascending = True, inplace = True)
     print(df)
-    ax = sns.barplot(data=df, x='tld', y='pct_phish')
+    ax = sns.barplot(data=df, x='tld', y='pct_phish',orient="h")
     ax.set_xlabel('Top (and Second) Level Domain')
     ax.set_ylabel('Percent Phishing')
     plt.show()
