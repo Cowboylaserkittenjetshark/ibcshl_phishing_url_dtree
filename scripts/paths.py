@@ -7,5 +7,6 @@ OUTPUT.mkdir(exist_ok=True)
 class data:
     DIR = ROOT.joinpath("data/")
     DIR.mkdir(exist_ok=True)
-    TRAIN_FILE = DIR.joinpath("Training.parquet")
-    TEST_FILE = DIR.joinpath("Testing.parquet")
+    # TRAIN_FILE = DIR.joinpath("Training.parquet")
+    # TEST_FILE = DIR.joinpath("Testing.parquet")
+    FILE = DIR.joinpath("dataset_cybersecurity_michelle.csv")
