@@ -1,4 +1,5 @@
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.experimental import enable_halving_search_cv
+from sklearn.model_selection import train_test_split, cross_val_score, HalvingGridSearchCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import classification_report
@@ -7,7 +8,7 @@ from common import X, y
 import logging
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(message)s'
 )
 
@@ -28,7 +29,7 @@ with parallel_backend('threading', n_jobs=-1):
     test_size=0.2)
 
     logging.info('==== Decision Tree ====')
-    dt_clf = DecisionTreeClassifier().fit(X_train, y_train)
+    dt_clf = DecisionTreeClassifier(random_state=42).fit(X_train, y_train)
 
     dt_score = dt_clf.score(X_valid, y_valid)
     dt_cross_val_score = cross_val_score(dt_clf, X_train, y_train, cv=7)
@@ -45,7 +46,7 @@ with parallel_backend('threading', n_jobs=-1):
     X_test_cut  = X_test[[col[0] for col in dt_feat_importance[:15]]]
     X_valid_cut = X_valid[[col[0] for col in dt_feat_importance[:15]]]
 
-    dt_clf = DecisionTreeClassifier().fit(X_train_cut, y_train)
+    dt_clf = DecisionTreeClassifier(random_state=42).fit(X_train_cut, y_train)
 
     dt_score = dt_clf.score(X_valid_cut, y_valid)
     dt_cross_val_score = cross_val_score(dt_clf, X_train_cut, y_train, cv=7)
@@ -55,8 +56,27 @@ with parallel_backend('threading', n_jobs=-1):
     logging.info('Cross val score: %s\n', dt_cross_val_score)
     logging.info('Classification report:\n%s\n', dt_report)
 
+    logging.info('==== Decision Tree tuned ====')
+    dt_params = {
+        'criterion': ['gini', 'entropy'],
+        'min_samples_split': range(2, 41, 2),
+        'min_samples_leaf': range(2, 21, 2),
+    }
+
+    dt_hgs = HalvingGridSearchCV(DecisionTreeClassifier(random_state=42), dt_params).fit(X_train, y_train)
+    dt_best_est = dt_hgs.best_estimator_
+    
+    dt_score = dt_best_est.score(X_valid, y_valid)
+    dt_cross_val_score = cross_val_score(dt_best_est, X_train, y_train, cv=7)
+    dt_report = classification_report(y_test, dt_best_est.predict(X_test))
+    
+    logging.info('Best parameters: ', str(dt_best_est))    
+    logging.info('Score: %s\n', dt_score)
+    logging.info('Cross val score: %s\n', dt_cross_val_score)
+    logging.info('Classification report:\n%s\n', dt_report)
+
     logging.info('==== Random Forest ====')
-    rf_clf = RandomForestClassifier().fit(X_train, y_train)
+    rf_clf = RandomForestClassifier(random_state=42).fit(X_train, y_train)
 
     rf_score = rf_clf.score(X_valid, y_valid)
     rf_cross_val_score = cross_val_score(rf_clf, X_train, y_train, cv=7)
@@ -73,7 +93,7 @@ with parallel_backend('threading', n_jobs=-1):
     X_test_cut  = X_test[[col[0] for col in rf_feat_importance[:15]]]
     X_valid_cut = X_valid[[col[0] for col in rf_feat_importance[:15]]]
 
-    rf_clf = RandomForestClassifier().fit(X_train_cut, y_train)
+    rf_clf = RandomForestClassifier(random_state=42).fit(X_train_cut, y_train)
 
     rf_score = rf_clf.score(X_valid_cut, y_valid)
     rf_cross_val_score = cross_val_score(rf_clf, X_train_cut, y_train, cv=7)
@@ -83,13 +103,13 @@ with parallel_backend('threading', n_jobs=-1):
     logging.info('Cross val score: %s\n', rf_cross_val_score)
     logging.info('Classification report:\n%s\n', rf_report)
 
-    # logging.info('==== Histogram Gradient Boosting ====')
-    # hgb_clf = HistGradientBoostingClassifier().fit(X_train, y_train)
+    logging.info('==== Histogram Gradient Boosting ====')
+    hgb_clf = HistGradientBoostingClassifier(random_state=42).fit(X_train, y_train)
 
-    # hgb_score = hgb_clf.score(X_valid, y_valid)
-    # hgb_cross_val_score = cross_val_score(hgb_clf, X_train, y_train, cv=7)
-    # hgb_report = classification_report(y_test, hgb_clf.predict(X_test))
+    hgb_score = hgb_clf.score(X_valid, y_valid)
+    hgb_cross_val_score = cross_val_score(hgb_clf, X_train, y_train, cv=7)
+    hgb_report = classification_report(y_test, hgb_clf.predict(X_test))
 
-    # logging.info('Score: %s\n', hgb_score)
-    # logging.info('Cross val score: %s\n', hgb_cross_val_score)
-    # logging.info('Classification report:\n%s\n', hgb_report)
+    logging.info('Score: %s\n', hgb_score)
+    logging.info('Cross val score: %s\n', hgb_cross_val_score)
+    logging.info('Classification report:\n%s\n', hgb_report)
