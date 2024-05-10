@@ -2,7 +2,7 @@ import logging
 from joblib import parallel_backend
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import train_test_split, cross_val_score, HalvingGridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
 from common import fetched_features
 
 def __feature_importance(model, X):
@@ -20,11 +20,13 @@ def __score_model(clf, X_train, y_train, X_valid, y_valid, X_test, y_test):
     cv_score = cross_val_score(clf, X_train, y_train, cv=7)
     report = classification_report(y_valid, clf.predict(X_valid))
     test_report = classification_report(y_test, clf.predict(X_test))
+    test_accuracy = accuracy_score(y_test, clf.predict(X_test))
 
     logging.info('Score: %s\n', score)
     logging.info('Cross val score: %s\n', cv_score)
     logging.info('Classification report:\n%s\n', report)
     logging.info('Test classification report:\n%s\n', test_report)
+    logging.info('Test accuracy: %s\n', test_accuracy)
 
 def __build_header(name, param_grid, with_fetched):
     options = " ("
