@@ -4,6 +4,9 @@ from trials import run_trial
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 random_state = 42
 
@@ -31,6 +34,15 @@ run_trial(name, classifier, X, y, with_fetched=True, param_grid=param_grid)
 
 name = "Hist Gradient Boosting"
 classifier = HistGradientBoostingClassifier(random_state=random_state)
+param_grid = None
+
+run_trial(name, classifier, X, y, with_fetched=False)
+run_trial(name, classifier, X, y, with_fetched=True)
+run_trial(name, classifier, X, y, with_fetched=False, param_grid=param_grid)
+run_trial(name, classifier, X, y, with_fetched=True, param_grid=param_grid)
+
+name = "Logistic Regression"
+classifier = make_pipeline(StandardScaler(), LogisticRegression(random_state=42))
 param_grid = None
 
 run_trial(name, classifier, X, y, with_fetched=False)
