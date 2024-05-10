@@ -42,11 +42,9 @@ def __build_header(name, param_grid, with_fetched):
 
     return name + options
 
-    
-
-def run_trial(name, classifier, X, y, param_grid=None, with_fetched=False):
+def run_trial(name, classifier, X, y, params=None, with_fetched=False):
     with parallel_backend('threading', n_jobs=-1):
-        header = __build_header(name, param_grid, with_fetched)
+        header = __build_header(name, params, with_fetched)
         logging.info('==== %s ====', header)
 
         if not with_fetched:
@@ -58,8 +56,8 @@ def run_trial(name, classifier, X, y, param_grid=None, with_fetched=False):
         X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2)
 
         clf = None
-        if param_grid:
-            clf = HalvingGridSearchCV(classifier, param_grid).fit(X_train, y_train)
+        if params:
+            clf = HalvingRandomSearchCV(classifier, params).fit(X_train, y_train)
         else:
             clf = classifier.fit(X_train, y_train)
 
