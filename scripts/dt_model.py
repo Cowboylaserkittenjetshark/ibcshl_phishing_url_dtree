@@ -1,12 +1,14 @@
-from sklearn.experimental import enable_halving_search_cv
-from sklearn.model_selection import train_test_split, cross_val_score, HalvingGridSearchCV
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.metrics import classification_report
 from joblib import parallel_backend
-from common import X, y
+from common import X, y, fetched_features
+from trials import run_trial
+from paths import output
 import logging
 
+run_trial("Decision Tree", DecisionTreeClassifier(random_state=42), X, y)
+exit(1)
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(message)s'
@@ -33,13 +35,16 @@ with parallel_backend('threading', n_jobs=-1):
 
     dt_score = dt_clf.score(X_valid, y_valid)
     dt_cross_val_score = cross_val_score(dt_clf, X_train, y_train, cv=7)
-    dt_report = classification_report(y_test, dt_clf.predict(X_test))
+    dt_report = classification_report(y_valid, dt_clf.predict(X_valid))
     dt_feat_importance = feature_importance(dt_clf)
 
     logging.info('Score: %s\n', dt_score)
     logging.info('Cross val score: %s\n', dt_cross_val_score)
     logging.info('Classification report:\n%s\n', dt_report)
     logging.debug('Feature importance: %s', str(dt_feat_importance))
+    
+    dt_test_report = classification_report(y_test, dt_clf.predict(X_test))
+    logging.info('Test classification report:\n%s\n', dt_report)
 
     logging.info('==== Decision Tree with feature selection')
     X_train_cut = X_train[[col[0] for col in dt_feat_importance[:15]]]
@@ -55,22 +60,54 @@ with parallel_backend('threading', n_jobs=-1):
     logging.info('Score: %s\n', dt_score)
     logging.info('Cross val score: %s\n', dt_cross_val_score)
     logging.info('Classification report:\n%s\n', dt_report)
+    export_graphviz(dt_clf, out_file=str(output.DIR.joinpath("dtree_cut.dot")), feature_names=list(X_train_cut), class_names=True, rounded=True, filled=True)
+
 
     logging.info('==== Decision Tree tuned ====')
-    dt_params = {
-        'criterion': ['gini', 'entropy'],
-        'min_samples_split': range(2, 41, 2),
-        'min_samples_leaf': range(2, 21, 2),
-    }
+    # param_dist = {
+    #     'criterion': optuna.distributions.CategoricalDistribution(['gini', 'entropy']),
+    #     'min_samples_split': optuna.distributions.IntDistribution(2, 40),
+    #     'min_samples_leaf': optuna.distributions.IntDistribution(2,20),
+    #     'max_depth': optuna.distributions.IntDistribution(10,80)
+    # }
 
-    dt_hgs = HalvingGridSearchCV(DecisionTreeClassifier(random_state=42), dt_params).fit(X_train, y_train)
-    dt_best_est = dt_hgs.best_estimator_
+    # optuna_search = optuna.integration.OptunaSearchCV(
+    #     DecisionTreeClassifier(random_state=42), param_dist, n_trials=100, timeout=600, verbose=2
+    # )
+
+    # optuna_search.fit(X, y)
+
+    # print("Best trial:")
+    # trial = optuna_search.study_.best_trial
+
+    # print("  Value: ", trial.value)
+    # print("  Params: ")
+    # for key, value in trial.params.items():
+    #     print("    {}: {}".format(key, value))
     
-    dt_score = dt_best_est.score(X_valid, y_valid)
-    dt_cross_val_score = cross_val_score(dt_best_est, X_train, y_train, cv=7)
-    dt_report = classification_report(y_test, dt_best_est.predict(X_test))
-    
-    logging.info('Best parameters: ', str(dt_best_est))    
+    dt_clf = DecisionTreeClassifier(random_state=42, criterion='entropy', min_samples_leaf=2, min_samples_split=2, max_depth=44).fit(X_train, y_train)
+
+    dt_score = dt_clf.score(X_valid, y_valid)
+    dt_cross_val_score = cross_val_score(dt_clf, X_train, y_train, cv=7)
+    dt_report = classification_report(y_test, dt_clf.predict(X_test))
+
     logging.info('Score: %s\n', dt_score)
     logging.info('Cross val score: %s\n', dt_cross_val_score)
     logging.info('Classification report:\n%s\n', dt_report)
+    
+    logging.info('==== Decision Tree without fetched features  ====')
+    X_train = X_train.drop(fetched_features, axis = 1)
+    X_test = X_test.drop(fetched_features, axis = 1)
+    X_valid = X_valid.drop(fetched_features, axis = 1)
+    dt_clf = DecisionTreeClassifier(random_state=42).fit(X_train, y_train)
+
+    dt_score = dt_clf.score(X_valid, y_valid)
+    dt_cross_val_score = cross_val_score(dt_clf, X_train, y_train, cv=7)
+    dt_report = classification_report(y_valid, dt_clf.predict(X_valid))
+
+    logging.info('Score: %s\n', dt_score)
+    logging.info('Cross val score: %s\n', dt_cross_val_score)
+    logging.info('Classification report:\n%s\n', dt_report)
+    
+    dt_test_report = classification_report(y_test, dt_clf.predict(X_test))
+    logging.info('Test classification report:\n%s\n', dt_report)

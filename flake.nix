@@ -36,12 +36,6 @@
             scikit-learn
             matplotlib
             seaborn
-            # Parquet support for pandas
-            pyarrow
-            fastparquet
-            # For extracting tlds
-            tldextract
-            xgboost
             joblib
           ]);
       };

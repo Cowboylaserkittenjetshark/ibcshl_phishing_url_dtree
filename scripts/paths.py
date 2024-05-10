@@ -1,8 +1,6 @@
 import pathlib
 
 ROOT = pathlib.Path(__file__).parent.parent.resolve()
-OUTPUT = ROOT.joinpath("output/")
-OUTPUT.mkdir(exist_ok=True)
 
 class data:
     DIR = ROOT.joinpath("data/")
@@ -10,3 +8,9 @@ class data:
     # TRAIN_FILE = DIR.joinpath("Training.parquet")
     # TEST_FILE = DIR.joinpath("Testing.parquet")
     FILE = DIR.joinpath("dataset_cybersecurity_michelle.csv")
+
+class output:
+    DIR = ROOT.joinpath("output/")
+    DIR.mkdir(exist_ok=True)
+    PIE_DIR = DIR.joinpath("pie/")
+    PIE_DIR.mkdir(exist_ok=True)

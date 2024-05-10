@@ -1,10 +1,9 @@
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import train_test_split, cross_val_score, HalvingGridSearchCV
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from joblib import parallel_backend
-from common import X, y
+from common import X, y, fetched_features
 import logging
 
 logging.basicConfig(
@@ -41,6 +40,9 @@ with parallel_backend('threading', n_jobs=-1):
     logging.info('Classification report:\n%s\n', rf_report)
     logging.debug('Feature importance: %s', str(rf_feat_importance))
 
+    rf_test_report = classification_report(y_valid, rf_clf.predict(X_valid))
+    logging.info('Test classification report:\n%s\n', rf_report)
+
     logging.info('==== Random Forest with feature selection ====')
     X_train_cut = X_train[[col[0] for col in rf_feat_importance[:15]]]
     X_test_cut  = X_test[[col[0] for col in rf_feat_importance[:15]]]
@@ -55,3 +57,20 @@ with parallel_backend('threading', n_jobs=-1):
     logging.info('Score: %s\n', rf_score)
     logging.info('Cross val score: %s\n', rf_cross_val_score)
     logging.info('Classification report:\n%s\n', rf_report)
+    
+    logging.info('==== Random Forest without fetched features ====')
+    X_train = X_train.drop(fetched_features, axis = 1)
+    X_test = X_test.drop(fetched_features, axis = 1)
+    X_valid = X_valid.drop(fetched_features, axis = 1)
+    rf_clf = RandomForestClassifier(random_state=42).fit(X_train, y_train)
+
+    rf_score = rf_clf.score(X_valid, y_valid)
+    rf_cross_val_score = cross_val_score(rf_clf, X_train, y_train, cv=7)
+    rf_report = classification_report(y_valid, rf_clf.predict(X_valid))
+
+    logging.info('Score: %s\n', rf_score)
+    logging.info('Cross val score: %s\n', rf_cross_val_score)
+    logging.info('Classification report:\n%s\n', rf_report)
+
+    rf_test_report = classification_report(y_valid, rf_clf.predict(X_valid))
+    logging.info('Test classification report:\n%s\n', rf_report)

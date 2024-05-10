@@ -1,10 +1,8 @@
-from sklearn.experimental import enable_halving_search_cv
-from sklearn.model_selection import train_test_split, cross_val_score, HalvingGridSearchCV
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import classification_report
 from joblib import parallel_backend
-from common import X, y
+from common import X, y, fetched_features
 import logging
 
 logging.basicConfig(
@@ -29,6 +27,20 @@ with parallel_backend('threading', n_jobs=-1):
     test_size=0.2)
 
     logging.info('==== Histogram Gradient Boosting ====')
+    hgb_clf = HistGradientBoostingClassifier(random_state=42).fit(X_train, y_train)
+
+    hgb_score = hgb_clf.score(X_valid, y_valid)
+    hgb_cross_val_score = cross_val_score(hgb_clf, X_train, y_train, cv=7)
+    hgb_report = classification_report(y_test, hgb_clf.predict(X_test))
+
+    logging.info('Score: %s\n', hgb_score)
+    logging.info('Cross val score: %s\n', hgb_cross_val_score)
+    logging.info('Classification report:\n%s\n', hgb_report)
+    
+    logging.info('==== Histogram Gradient Boosting without fetched features ====')
+    X_train = X_train.drop(fetched_features, axis = 1)
+    X_test = X_test.drop(fetched_features, axis = 1)
+    X_valid = X_valid.drop(fetched_features, axis = 1)
     hgb_clf = HistGradientBoostingClassifier(random_state=42).fit(X_train, y_train)
 
     hgb_score = hgb_clf.score(X_valid, y_valid)
