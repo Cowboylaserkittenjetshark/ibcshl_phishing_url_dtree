@@ -8,6 +8,7 @@ class data:
     # TRAIN_FILE = DIR.joinpath("Training.parquet")
     # TEST_FILE = DIR.joinpath("Testing.parquet")
     FILE = DIR.joinpath("dataset_cybersecurity_michelle.csv")
+    EXTRA_FILE = DIR.joinpath("malicious_phish.csv")
 
 class output:
     DIR = ROOT.joinpath("output/")

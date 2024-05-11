@@ -1,5 +1,5 @@
 import common
-from common import X, y
+from common.data import X, y
 from trials import run_trial
 
 from sklearn.tree import DecisionTreeClassifier

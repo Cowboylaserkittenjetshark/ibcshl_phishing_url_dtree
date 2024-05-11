@@ -1,6 +1,6 @@
 import argparse
 import importlib
-from common import X, y
+from common.data import X, y
 
 
 graphs = [

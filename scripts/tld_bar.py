@@ -1,12 +1,12 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import tldextract
+from common.data import extra_data
 
-def make_graph(X, y):
-    tlds = X.tld
-    y = pd.get_dummies(y)
-
-    df = pd.concat([tlds, y], axis = 1)
+def make_graph():
+    tlds = X.url.map(lambda url: tldextract.extract(url).suffix).rename('tld')
+    # y = pd.get_dummies(y)
     df = df.groupby(by = 'tld').sum()
     # Use [^0-9:] to drop IPs and IPs with ports specified
     df = df.filter(axis = 0, regex = "[^0-9:]")

@@ -1,20 +1,12 @@
-import matplotlib as mpl
 import pandas as pd
-import mplcatppuccin
-import seaborn as sns
 import paths
-import logging
-
-# Plot style
-TRANSPARENT = True
-sns.set_style("whitegrid")
-sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
-mpl.style.use("mocha")
 
 data = pd.read_csv(paths.data.FILE)
 target_label = 'phishing'
 y = data[target_label]
 X = data.drop(target_label, axis = 1)
+
+extra_data = pd.read_csv(paths.data.EXTRA_FILE)
 
 fetched_features = [
     'time_response',
@@ -32,7 +24,3 @@ fetched_features = [
      'domain_google_index'
 ]
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(message)s'
-)
