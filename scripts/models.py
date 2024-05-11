@@ -27,7 +27,9 @@ run_trial(name, classifier, X, y, with_fetched=True, params=params)
 
 name = "Random Forest"
 classifier = RandomForestClassifier(random_state=random_state)
-params = None
+params['n_estimators'] = randint(100, 2000)
+params['bootstrap']= [True, False]
+
 
 run_trial(name, classifier, X, y, with_fetched=False)
 run_trial(name, classifier, X, y, with_fetched=True)
