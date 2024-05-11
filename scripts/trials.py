@@ -1,7 +1,7 @@
 import logging
 from joblib import parallel_backend
 from sklearn.experimental import enable_halving_search_cv
-from sklearn.model_selection import train_test_split, cross_val_score, HalvingGridSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score, HalvingRandomSearchCV
 from sklearn.metrics import classification_report, accuracy_score
 from common import fetched_features
 
@@ -57,7 +57,7 @@ def run_trial(name, classifier, X, y, params=None, with_fetched=False):
 
         clf = None
         if params:
-            clf = HalvingRandomSearchCV(classifier, params).fit(X_train, y_train)
+            clf = HalvingRandomSearchCV(classifier, params, verbose=1).fit(X_train, y_train)
         else:
             clf = classifier.fit(X_train, y_train)
 
