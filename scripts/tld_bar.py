@@ -2,21 +2,47 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import tldextract
+from collections import defaultdict
 from common.data import extra_data
+import common.setup
+
 
 def make_graph():
-    tlds = X.url.map(lambda url: tldextract.extract(url).suffix).rename('tld')
-    # y = pd.get_dummies(y)
-    df = df.groupby(by = 'tld').sum()
-    # Use [^0-9:] to drop IPs and IPs with ports specified
-    df = df.filter(axis = 0, regex = "[^0-9:]")
-    df['total']= df.phishing + df.legitimate
-    df = df[df.total > 50]
-    df["pct_phish"] = (df.phishing / df.total) * 100
+    df = extra_data
+    length = len(df)
+    df["tld"] = df.url.map(lambda url: tldextract.extract(url).suffix).rename(
+        "tld"
+    )
+    # Generalize to malicious or not (was benign, phishing, defacement, etc.)
+    df.rename(columns={"type": "malicious"}, inplace=True)
+    df["malicious"] = df["malicious"].map(
+        defaultdict(lambda: 1, {"benign": 0})
+    )
+    df = pd.get_dummies(df, columns=["malicious"])
+    df.rename(
+        columns={
+            "malicious_1": "malicious",
+            "malicious_0": "benign",
+        },
+        inplace=True,
+    )
+    df.drop(["url"], inplace=True, axis=1)
+
+    df = df.groupby(by="tld").sum()
+    df["total"] = df.malicious + df.benign
+    df = df[df.total > length * 0.01]
+    df["pct_phish"] = (df.malicious / df.total) * 100
     # print(df.loc['ru'])
-    df.sort_values(by = ['pct_phish', 'total'], ascending = True, inplace = True)
-    print(df)
-    ax = sns.barplot(data=df, x='tld', y='pct_phish',orient="h")
-    ax.set_xlabel('Top (and Second) Level Domain')
-    ax.set_ylabel('Percent Phishing')
+    df.sort_values(
+        by=["pct_phish", "total"],
+        ascending=False,
+        inplace=True,
+    )
+    ax = sns.barplot(data=df, x="pct_phish", y="tld", orient="h")
+    ax.set_ylabel("Top (and Second) Level Domain")
+    ax.set_xlabel("Percent Phishing")
     plt.show()
+
+
+if __name__ == "__main__":
+    make_graph()

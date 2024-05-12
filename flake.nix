@@ -37,6 +37,7 @@
             matplotlib
             seaborn
             joblib
+            tldextract
           ]);
       };
     });

@@ -2,6 +2,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).parent.parent.resolve()
 
+
 class data:
     DIR = ROOT.joinpath("data/")
     DIR.mkdir(exist_ok=True)
@@ -9,6 +10,7 @@ class data:
     # TEST_FILE = DIR.joinpath("Testing.parquet")
     FILE = DIR.joinpath("dataset_cybersecurity_michelle.csv")
     EXTRA_FILE = DIR.joinpath("malicious_phish.csv")
+
 
 class output:
     DIR = ROOT.joinpath("output/")
