@@ -96,9 +96,11 @@ def run_trial(
 
         clf = None
         if params:
-            clf = HalvingRandomSearchCV(classifier, params, verbose=0).fit(
-                X_train, y_train
-            ).best_estimator_
+            clf = (
+                HalvingRandomSearchCV(classifier, params, verbose=0)
+                .fit(X_train, y_train)
+                .best_estimator_
+            )
         else:
             clf = classifier.fit(X_train, y_train)
 
