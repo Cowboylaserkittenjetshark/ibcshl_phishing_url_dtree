@@ -64,6 +64,7 @@ def run_trial(
     params=None,
     with_fetched=False,
     feature_importance_model=None,
+    fit_all_finally=False
 ):
     with parallel_backend("threading", n_jobs=-1):
         header = __build_header(
@@ -120,5 +121,8 @@ def run_trial(
             X_test,
             y_test,
         )
+
+        if fit_all_finally:
+            clf = classifier.fit(X, y)
 
         return clf

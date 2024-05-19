@@ -38,6 +38,7 @@
             seaborn
             joblib
             tldextract
+            graphviz
           ]);
       };
     });
